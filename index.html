@@ -1,0 +1,89 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="http://www.w3school.com.cn/jquery/jquery-1.11.1.min.js" charset="utf-8"></script>
+    <script src="html2canvas.js" charset="utf-8"></script>
+    <script src="jquery.qrcode.min.js" charset="utf-8"></script>
+</head>
+<body>
+<h2 id="J_img_box">图片框</h2>
+<h1 onclick="genQrImg.html2Canvas();" style="background:#cacae2;width:260px;">HTML生成图片</h1>
+
+<div style="background:orange;height:800px;width:800px;" id="J_html_box" data-status='0'>
+    If you have choices, choose the best. If you have no choice, do the best.
+    <br/>
+    如果有选择，那就选择最好的；如果没有选择，那就努力做到最好。
+    <br/>
+    Stop to have a rest, do not forget others still in the running.
+    <br/>
+    停下来休息的时候，不要忘记别人还在奔跑。
+    <br/>
+    A lion does not concern himself with the opinion of sheep.
+    <br/>
+    一头雄狮并不会在意羊怎么想。
+    <br/>
+    Live boldly. Push yourself. Don't settle.
+    <br/>
+    勇敢生活，突破自我，人生不设限！
+    <img src="demo.jpg">
+    <div class="J_qr"></div>
+</div>
+</body>
+<script>
+    var qr_url = 'http://www.updateweb.cn';
+    $(".J_qr").qrcode({
+        render: "canvas", width: 88, height: 88, text: qr_url, typeNumber: -1,   //计算模式一般默认为-1
+        correctLevel: 1
+    });
+    var genQrImg = {
+        //获取像素密度
+        getPixelRatio: function (context) {
+            var backingStore = context.backingStorePixelRatio ||
+                context.webkitBackingStorePixelRatio ||
+                context.mozBackingStorePixelRatio ||
+                context.msBackingStorePixelRatio ||
+                context.oBackingStorePixelRatio ||
+                context.backingStorePixelRatio || 1;
+            return (window.devicePixelRatio || 1) / backingStore;
+        },
+        //绘制dom 元素，生成截图canvas
+        html2Canvas: function () {
+            var html_box_obj = $("#J_html_box");
+            // 如果已生成, 无需重复生成
+            if (html_box_obj.attr('data-status') == '1') {
+                return;
+            }
+
+            var shareContent = html_box_obj[0];// 需要绘制的部分的 (原生）dom 对象 ，注意容器的宽度不要使用百分比，使用固定宽度，避免缩放问题
+            //   var parent_obj = html_box_obj.parent();
+            //   var offset_top = parent_obj.css('top').replace('px', '') * 1;
+            //   var offset_left = parent_obj.css('left').replace('px', '') * 1;
+            var offset_top = 0;         // 请根据实际情况自定义 取值
+            var offset_left = 0;        // 请根据实际情况自定义 取值
+            var width = shareContent.offsetWidth + offset_left;  // 获取(原生）dom 宽度
+            var height = shareContent.offsetHeight + offset_top; // 获取(原生）dom 高
+
+            var canvas = document.createElement('canvas');  //创建canvas 对象
+            var context = canvas.getContext('2d');
+            var scaleBy = this.getPixelRatio(context);  //获取像素密度的方法 (也可以采用自定义缩放比例)
+            canvas.width = width * scaleBy;   //这里 由于绘制的dom 为固定宽度，居中，所以没有偏移
+            canvas.height = height * scaleBy;  // 注意高度问题，由于顶部有个距离所以要加上顶部的距离，解决图像高度偏移问题
+            context.scale(scaleBy, scaleBy);
+            var opts = {
+                allowTaint: true,//允许加载跨域的图片
+                tainttest: true, //检测每张图片都已经加载完成
+                scale: scaleBy, // 添加的scale 参数
+                canvas: canvas, //自定义 canvas
+                logging: false, //日志开关，发布的时候记得改成false
+                width: width, //dom 原始宽度
+                height: height //dom 原始高度
+            };
+            html2canvas(shareContent, opts).then(function (canvas) {
+                var img_src = canvas.toDataURL("image/png");
+                $('#J_img_box').attr('data-status', 1).html("<img src='" + img_src + "' style='height:800px;width:800px;'>");
+            });
+        }
+    };
+</script>
+</html>
